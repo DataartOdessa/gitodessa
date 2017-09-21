@@ -1,1 +1,3 @@
 # gitodessa
+
+coolMethod()
