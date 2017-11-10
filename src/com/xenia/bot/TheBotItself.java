@@ -112,7 +112,7 @@ public class TheBotItself extends TelegramLongPollingBot {
         stat.closeOnCompletion();
         System.out.println("length = " + count);
         return count;
-
+        //TODO delete this line
     }
 
     private String selectPhrase() throws SQLException, IOException, ClassNotFoundException {
