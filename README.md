@@ -1,5 +1,0 @@
-# gitodessa
-
-coolMethod()
-
-secondCoolMethod()
