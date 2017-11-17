@@ -13,7 +13,7 @@ import java.sql.Statement;
 public class Main {
     public static void main(String[] args) throws SQLException, ClassNotFoundException {
         //PostgresqlDBConnector postgresqlDBConnector;
-
+        int i = 0;
 
         Connection connection = PostgresqlDBConnector.getInstance().getConnection();
 //        PostgresqlDBConnector post2 = PostgresqlDBConnector.getInstance();

@@ -22,7 +22,7 @@ public class TheBotItself extends TelegramLongPollingBot {
         this.connection = connection;
     }
 
-    String[] words; //sorry for this(((( I dont imagine how to escape it
+    String[] words;
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -115,17 +115,39 @@ public class TheBotItself extends TelegramLongPollingBot {
         //TODO delete this line
     }
 
+    private int switchState() throws SQLException {
+        Statement stmt = connection.createStatement();
+        int state = 1;
+        for (int i = 0; i < words.length; i++) {
+            ResultSet rs = stmt.executeQuery("select state from answer, keyword\n" +
+                    "where '" + words[i] + "' = keyword.word\n" +
+                    "and answer.keywords = keyword.id \n");
+            while (rs.next()) {
+                state = rs.getInt(1);
+            }
+        }
+        System.out.println("state = " + state);
+        return state;
+    }
+
     private String selectPhrase() throws SQLException, IOException, ClassNotFoundException {
         Statement stmt = connection.createStatement();
         String[] ans = {};
         List<String> list = new ArrayList<>();
-        for (int i = 0; i < words.length; i++ ) {
-            ResultSet rs = stmt.executeQuery("select answer from keyword, answer\n" +
-                    "where '" + words[i] + "' = any (keyword.word)\n" +
-                    "and answer.keywords = keyword.id \n" +
-                    "or (select book from book, genre\n" +
-                    "where '" + words[i] + "' = genre.genre\n" +
-                    "and genre.id = any (book.genre))");
+
+        int a;
+        for (int i = 0; i < words.length; i++) {
+           ResultSet rs = stmt.executeQuery("with temp_tbl as(\n" +
+                   "select array_to_string(ARRAY[author, caption, description], '. ')\n" +
+                   "from genre, book, keyword\n" +
+                   "where '" + words[i] + "' ~* genre.genre \n" +
+                   "and genre.id = any(book.genre)\n" +
+                   "UNION\n" +
+                   "select answer from keyword, answer, genre, book\n" +
+                   "where '" + words[i] + "' ~* keyword.word\n" +
+                   "and answer.keywords = keyword.state\n" +
+                   " )\n" +
+                   "select * from temp_tbl");
             while (rs.next()) {
                 list.add(rs.getString(1));
                 ans = list.toArray(new String[list.size()]);
@@ -133,8 +155,7 @@ public class TheBotItself extends TelegramLongPollingBot {
         }
         stmt.close();
         System.out.println("answer = " + list);
-        int a = (int) (Math.random() * ans.length-1);
+        a = (int) (Math.random() * ans.length);
         return ans[a];
-
     }
 }
